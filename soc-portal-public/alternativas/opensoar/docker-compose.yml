@@ -1,0 +1,103 @@
+# OpenSOAR (opensoar-hq/opensoar-core) construido desde el código fuente,
+# fijado a un commit concreto por setup-opensoar.sh (OPENSOAR_REF en .env).
+# El servicio debe llamarse "api": la UI (nginx) le reenvía /api.
+x-env: &env
+  DATABASE_URL: postgresql+asyncpg://opensoar:${OPENSOAR_DB_PASSWORD}@opensoar-db:5432/opensoar
+  REDIS_URL: redis://opensoar-redis:6379/0
+  CELERY_BROKER_URL: redis://opensoar-redis:6379/1
+  JWT_SECRET: ${OPENSOAR_JWT_SECRET}
+  API_KEY_SECRET: ${OPENSOAR_API_KEY_SECRET}
+  PLAYBOOK_DIRS: /app/playbooks
+  LOCAL_LOGIN_ENABLED: "true"
+  LOCAL_REGISTRATION_ENABLED: "false"
+  # Usadas por los playbooks del SOC
+  MISP_URL: ${OPENSOAR_MISP_URL}
+  MISP_API_KEY: ${MISP_API_KEY}
+  MISP_VERIFY_TLS: ${MISP_VERIFY_TLS}
+  MISP_LINK_URL: ${MISP_BASE_URL}
+
+services:
+  opensoar-db:
+    image: postgres:16-alpine
+    container_name: opensoar-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: opensoar
+      POSTGRES_USER: opensoar
+      POSTGRES_PASSWORD: ${OPENSOAR_DB_PASSWORD}
+    volumes:
+      - opensoar-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opensoar"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [soc-net]
+
+  opensoar-redis:
+    image: redis:7-alpine
+    container_name: opensoar-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [soc-net]
+
+  migrate:
+    build: { context: ./opensoar-core, target: migrate }
+    image: soc/opensoar-migrate:${OPENSOAR_REF}
+    container_name: opensoar-migrate
+    environment: *env
+    depends_on:
+      opensoar-db: { condition: service_healthy }
+    networks: [soc-net]
+
+  api:
+    build: { context: ./opensoar-core, target: api }
+    image: soc/opensoar-api:${OPENSOAR_REF}
+    container_name: opensoar-api
+    restart: unless-stopped
+    environment: *env
+    volumes:
+      - ./playbooks:/app/playbooks:ro
+    ports:
+      - "8000:8000"          # webhooks de Wazuh + API
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      opensoar-redis: { condition: service_healthy }
+    networks: [soc-net]
+
+  worker:
+    build: { context: ./opensoar-core, target: worker }
+    image: soc/opensoar-worker:${OPENSOAR_REF}
+    container_name: opensoar-worker
+    restart: unless-stopped
+    command: >
+      celery -A opensoar.worker.celery_app worker
+      --loglevel=info --concurrency=4 -Q high,default,low -n soc@%h
+    environment: *env
+    volumes:
+      - ./playbooks:/app/playbooks:ro
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      opensoar-redis: { condition: service_healthy }
+    networks: [soc-net]
+
+  ui:
+    build: { context: ./opensoar-core, target: ui }
+    image: soc/opensoar-ui:${OPENSOAR_REF}
+    container_name: opensoar-ui
+    restart: unless-stopped
+    ports:
+      - "3002:80"            # 3000 lo usa Wiki.js
+    depends_on: [api]
+    networks: [soc-net]
+
+volumes:
+  opensoar-db-data:
+
+networks:
+  soc-net:
+    external: true

@@ -1,0 +1,127 @@
+# MISP oficial (misp-docker, formato 2.5.x): misp-core (PHP-FPM :9002) + misp-nginx (web).
+# Puertos 8080/8443 en el host para no chocar con otros servicios.
+# Certificados: ./misp/ssl/cert.pem y key.pem (los genera deploy.sh si no existen).
+services:
+  misp-redis:
+    image: valkey/valkey:7.2
+    container_name: misp-redis
+    restart: unless-stopped
+    command: ["valkey-server", "--requirepass", "${MISP_REDIS_PASSWORD}"]
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    environment:
+      REDIS_PASSWORD: ${MISP_REDIS_PASSWORD}
+    networks: [soc-net]
+
+  misp-db:
+    image: mariadb:10.11
+    container_name: misp-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: misp
+      MYSQL_USER: misp
+      MYSQL_PASSWORD: ${MISP_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MISP_DB_ROOT_PASSWORD}
+    command: --innodb-buffer-pool-size=1G
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - misp-db-data:/var/lib/mysql
+    networks: [soc-net]
+
+  misp-modules:
+    image: ghcr.io/misp/misp-docker/misp-modules:latest
+    container_name: misp-modules
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/6666'"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+    networks:
+      soc-net:
+        aliases: [misp-modules]
+
+  misp-core:
+    image: ghcr.io/misp/misp-docker/misp-core:latest
+    container_name: misp-core
+    restart: unless-stopped
+    depends_on:
+      misp-db: { condition: service_healthy }
+      misp-redis: { condition: service_healthy }
+      misp-modules: { condition: service_healthy }
+    environment:
+      BASE_URL: ${MISP_BASE_URL}
+      ADMIN_EMAIL: ${MISP_ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${MISP_ADMIN_PASSWORD}
+      ADMIN_ORG: ACME
+      MYSQL_HOST: misp-db
+      MYSQL_PORT: 3306
+      MYSQL_USER: misp
+      MYSQL_PASSWORD: ${MISP_DB_PASSWORD}
+      MYSQL_DATABASE: misp
+      REDIS_HOST: misp-redis
+      REDIS_PASSWORD: ${MISP_REDIS_PASSWORD}
+      MISP_MODULES_FQDN: http://misp-modules
+      DISABLE_IPV6: "true"
+      TZ: America/Santo_Domingo
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/9002'"]
+      interval: 10s
+      timeout: 2s
+      retries: 6
+      start_period: 120s
+    expose: ["9002", "9003"]
+    volumes:
+      - misp-configs:/var/www/MISP/app/Config
+      - misp-files:/var/www/MISP/app/files
+      - misp-logs:/var/www/MISP/app/tmp/logs
+      - misp-gnupg:/var/www/MISP/.gnupg
+    networks: [soc-net]
+
+  misp-nginx:
+    image: ghcr.io/misp/misp-docker/misp-nginx:latest
+    container_name: misp-nginx
+    restart: unless-stopped
+    depends_on:
+      misp-core: { condition: service_healthy }
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - ./ssl:/etc/nginx/certs:ro
+    tmpfs:
+      - /etc/nginx/conf.d:mode=0755,uid=101,gid=101
+      - /var/cache/nginx:mode=0755,uid=101,gid=101
+      - /tmp:mode=1777
+    user: nginx
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    environment:
+      BASE_URL: ${MISP_BASE_URL}
+      DISABLE_IPV6: "true"
+      TZ: America/Santo_Domingo
+      FASTCGI_LISTEN: misp-core:9002
+      FASTCGI_LISTEN_STATUS: misp-core:9003
+      NGINX_CLIENT_MAX_BODY_SIZE: 50M
+    networks:
+      soc-net:
+        aliases: [misp]
+
+volumes:
+  misp-db-data:
+  misp-configs:
+  misp-files:
+  misp-logs:
+  misp-gnupg:
+
+networks:
+  soc-net:
+    external: true

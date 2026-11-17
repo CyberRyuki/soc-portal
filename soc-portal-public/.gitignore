@@ -1,0 +1,25 @@
+# Secretos y datos: NUNCA al repositorio
+.env
+.env.*
+!.env.example
+data/
+*.db
+*.db-shm
+*.db-wal
+*.xlsx
+*.tgz
+
+# Dependencias y compilados
+node_modules/
+web/dist/
+web/playwright-report/
+web/test-results/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

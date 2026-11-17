@@ -1,0 +1,57 @@
+services:
+  soc-web:
+    build: ../web
+    container_name: soc-web
+    restart: unless-stopped
+    # Interfaz React + proxy a la API. Puerto único de entrada: http://HOST_IP:8088/portal/
+    # Restringe el puerto 8088 a la red del SOC en el firewall.
+    ports:
+      - "8088:8088"
+    depends_on: [soc-bridge]
+    read_only: true
+    tmpfs: [/var/cache/nginx, /var/run, /tmp]
+    security_opt: ["no-new-privileges:true"]
+    networks: [soc-net]
+
+  soc-screens:
+    # Capturas de pantalla para la comparación visual. Aislado: sin .env, sin datos, solo lectura, sin privilegios.
+    build: ../screens
+    container_name: soc-screens
+    restart: unless-stopped
+    expose: ["8090"]
+    environment:
+      SCREENS_TOKEN: ${SCREENS_TOKEN:-}
+      SCREENS_PARALLEL: ${SCREENS_PARALLEL:-3}
+    read_only: true
+    tmpfs: ["/tmp:size=512m"]
+    shm_size: 256m
+    mem_limit: 1536m
+    pids_limit: 512
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [soc-net]
+
+  soc-bridge:
+    build: .
+    container_name: soc-bridge
+    restart: unless-stopped
+    env_file: ../.env
+    # Solo accesible desde la red de Docker (lo publica soc-web)
+    expose: ["8088"]
+    environment:
+      DB_PATH: /data/soc.db
+      AUTH_TRUST_PROXY: "true"   # la IP real llega en X-Forwarded-For desde soc-web
+      # El contenedor es de solo lectura: SQLite necesita un sitio para sus temporales (DISTINCT/GROUP BY
+      # sobre millones de IoC). Van al volumen de datos para no consumir RAM.
+      SQLITE_TMPDIR: /data/.tmp
+      TMPDIR: /data/.tmp
+    volumes:
+      - ./data:/data          # incidentes, runbooks, IoC y herramientas (SQLite). Respaldar esta carpeta.
+    tmpfs: [/tmp]
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    networks: [soc-net]
+
+networks:
+  soc-net:
+    external: true

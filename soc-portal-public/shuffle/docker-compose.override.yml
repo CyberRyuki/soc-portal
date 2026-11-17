@@ -1,0 +1,18 @@
+# Ajustes del portal SOC sobre el docker-compose.yml OFICIAL de Shuffle.
+# setup-shuffle.sh lo copia junto al compose oficial (shuffle/shuffle-core/).
+services:
+  backend:
+    image: ghcr.io/shuffle/shuffle-backend:${SHUFFLE_IMAGE_TAG:-latest}
+    ports: !reset []            # 5001 solo interno: el frontend reenvía /api
+  frontend:
+    image: ghcr.io/shuffle/shuffle-frontend:${SHUFFLE_IMAGE_TAG:-latest}
+  orborus:
+    image: ghcr.io/shuffle/shuffle-orborus:${SHUFFLE_IMAGE_TAG:-latest}
+    environment:
+      - SHUFFLE_WORKER_IMAGE=ghcr.io/shuffle/shuffle-worker:${SHUFFLE_IMAGE_TAG:-latest}
+  shuffle-security:
+    image: ghcr.io/shuffle/shuffle-security:${SHUFFLE_IMAGE_TAG:-latest}
+  opensearch:
+    ports: !reset []            # OpenSearch nunca expuesto a la red
+    environment:
+      - "OPENSEARCH_JAVA_OPTS=-Xms${SHUFFLE_OPENSEARCH_HEAP:-2g} -Xmx${SHUFFLE_OPENSEARCH_HEAP:-2g}"

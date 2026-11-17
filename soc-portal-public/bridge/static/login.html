@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Iniciar sesión · Portal SOC ACME</title>
+<script>try{var t=localStorage.getItem("soc-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+:root{color-scheme:light;--bg:#f6f7fb;--card:#fff;--ink:#151a2d;--muted:#667085;--line:#e6e8f0;--brand:#2f5bea;--brand-soft:#eef2ff;--bad:#d03b3b;--bad-soft:#fef3f2;--ok:#0ca30c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0d1120;--card:#151a2d;--ink:#eef0f7;--muted:#98a2b3;--line:#262c44;--brand:#7c9bff;--brand-soft:#1d2550;--bad:#ef6b6b;--bad-soft:#331414}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0d1120;--card:#151a2d;--ink:#eef0f7;--muted:#98a2b3;--line:#262c44;--brand:#7c9bff;--brand-soft:#1d2550;--bad:#ef6b6b;--bad-soft:#331414}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg)}
+body{color:var(--ink);font:15px/1.5 "Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;display:grid;grid-template-columns:1.1fr 1fr;min-height:100vh}
+.side{position:relative;overflow:hidden;color:#fff;padding:48px 56px;display:flex;flex-direction:column;justify-content:space-between;
+  background:radial-gradient(circle at 80% 10%,rgba(122,90,248,.6),transparent 50%),radial-gradient(circle at 10% 90%,rgba(47,91,234,.5),transparent 45%),linear-gradient(135deg,#0e1640,#1f2d8a 55%,#3b2fa8)}
+.side::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(180deg,transparent,#000 40%,transparent)}
+.side>*{position:relative;z-index:1}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px}
+.brand i{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.14);font-style:normal}
+.side h1{font-size:38px;line-height:1.15;margin:0 0 14px;max-width:520px}
+.side p{color:rgba(255,255,255,.78);max-width:480px;margin:0}
+.feats{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:12px;max-width:480px}
+.feats li{display:flex;gap:12px;align-items:flex-start;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;font-size:14px}
+.feats b{display:block}
+.feats span{color:rgba(255,255,255,.7)}
+.legal{font-size:12.5px;color:rgba(255,255,255,.65);max-width:520px}
+main{display:grid;place-items:center;padding:32px 20px}
+.card{width:100%;max-width:410px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:32px;box-shadow:0 1px 2px rgba(16,24,40,.05),0 18px 48px rgba(16,24,40,.1)}
+h2{margin:0 0 4px;font-size:24px}
+.sub{color:var(--muted);margin:0 0 22px;font-size:14px}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 6px}
+.f{position:relative;margin-bottom:16px}
+input{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+input:focus{outline:3px solid var(--brand-soft);border-color:var(--brand)}
+.eye{position:absolute;right:8px;bottom:7px;border:0;background:none;color:var(--muted);cursor:pointer;font-size:13px;padding:6px}
+.code{font-size:28px;letter-spacing:12px;text-align:center;font-variant-numeric:tabular-nums;padding:14px}
+button.go{width:100%;border:0;border-radius:12px;padding:13px;font:600 15px inherit;color:#fff;background:linear-gradient(135deg,#2f5bea,#5b45e0);cursor:pointer;margin-top:4px}
+button.go:disabled{opacity:.6;cursor:wait}
+.err{display:none;background:var(--bad-soft);color:var(--bad);border-radius:10px;padding:10px 12px;font-size:13.5px;margin-bottom:14px}
+.err.on{display:block}
+.hint{font-size:12.5px;color:var(--muted);margin-top:16px;text-align:center}
+.link{color:var(--brand);font-weight:600;cursor:pointer;background:none;border:0;font:inherit;font-size:13px;padding:0}
+.caps{display:none;color:#b26b00;font-size:12px;margin-top:6px} .caps.on{display:block}
+.foot{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start}
+@media (max-width:900px){body{grid-template-columns:1fr}.side{padding:28px 22px}.side h1{font-size:26px}.feats,.legal{display:none}}
+</style>
+</head>
+<body>
+<section class="side">
+  <div class="brand"><i><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4.5-3 7.8-7 9-4-1.2-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></i>Portal SOC · ACME</div>
+  <div>
+    <h1>Centro de Operaciones de Seguridad</h1>
+    <p>Monitoreo, inteligencia de amenazas y respuesta a incidentes en un solo lugar.</p>
+    <ul class="feats">
+      <li>🛡️<div><b>Wazuh, MISP y Shuffle integrados</b><span>Alertas, IoC y automatización en vivo.</span></div></li>
+      <li>🔎<div><b>Inteligencia de amenazas</b><span>Millones de indicadores cruzados con tus alertas.</span></div></li>
+      <li>🔐<div><b>Acceso protegido</b><span>Doble factor, roles y registro de cada acceso.</span></div></li>
+    </ul>
+  </div>
+  <div class="legal">Sistema de uso exclusivo para personal autorizado de ACME. Los accesos y acciones quedan registrados y pueden ser auditados.</div>
+</section>
+<main>
+  <div class="card">
+    <form id="fLogin" autocomplete="on">
+      <h2>Iniciar sesión</h2>
+      <p class="sub" id="sub">Entra con tu cuenta del portal.</p>
+      <div class="err" id="err"></div>
+      <div class="f"><label for="u">Usuario</label><input id="u" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" required autofocus></div>
+      <div class="f"><label for="p">Contraseña</label><input id="p" name="password" type="password" autocomplete="current-password" required>
+        <button type="button" class="eye" onclick="var p=document.getElementById('p');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'Mostrar':'Ocultar'">Mostrar</button>
+        <div class="caps" id="caps">⚠ Bloq Mayús está activado</div></div>
+      <button class="go" id="bLogin">Entrar</button>
+    </form>
+    <form id="fMfa" style="display:none" autocomplete="off">
+      <h2>Verificación en dos pasos</h2>
+      <p class="sub" id="mfaSub">Escribe el código de 6 dígitos de tu app Authenticator.</p>
+      <div class="err" id="err2"></div>
+      <div class="f"><input id="code" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••"></div>
+      <button class="go" id="bMfa">Verificar</button>
+      <div class="hint"><button type="button" class="link" id="rec">¿Sin teléfono? Usar un código de recuperación</button> · <button type="button" class="link" onclick="location.reload()">Volver</button></div>
+    </form>
+    <div class="foot">🔒 <span>Tras varios intentos fallidos la cuenta se bloquea temporalmente. Si olvidaste tu contraseña, contacta con un administrador del SOC.</span></div>
+  </div>
+</main>
+<script>
+var LDAP = "{{LDAP}}" === "1", ticket = null, recovery = false;
+if (LDAP) document.getElementById("sub").textContent = "Usa tu cuenta del dominio ACME o una cuenta local de emergencia.";
+function err(id, m) { var e = document.getElementById(id); e.textContent = m; e.classList.toggle("on", !!m); }
+async function post(url, body) {
+  var r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json", "X-SOC": "1"}, body: JSON.stringify(body), credentials: "same-origin"});
+  var d = {}; try { d = await r.json(); } catch (e) {}
+  return {ok: r.ok, d: d};
+}
+var next = new URLSearchParams(location.search).get("next") || "";
+function done() { location.href = "/portal/" + (next.startsWith("#") ? next : ""); }
+document.getElementById("p").addEventListener("keyup", function (e) { document.getElementById("caps").classList.toggle("on", e.getModifierState && e.getModifierState("CapsLock")); });
+document.getElementById("fLogin").addEventListener("submit", async function (e) {
+  e.preventDefault(); err("err", ""); var b = document.getElementById("bLogin"); b.disabled = true; b.textContent = "Comprobando…";
+  try {
+    var r = await post("/portal/auth/login", {username: document.getElementById("u").value, password: document.getElementById("p").value});
+    if (!r.ok) { err("err", r.d.error || "No se pudo iniciar sesión"); document.getElementById("p").select(); return; }
+    if (r.d.mfa) { ticket = r.d.mfa; document.getElementById("fLogin").style.display = "none"; document.getElementById("fMfa").style.display = ""; document.getElementById("code").focus(); return; }
+    done();
+  } catch (x) { err("err", "Error de conexión con el portal"); }
+  finally { b.disabled = false; b.textContent = "Entrar"; }
+});
+document.getElementById("rec").onclick = function () {
+  recovery = !recovery; var c = document.getElementById("code");
+  c.maxLength = recovery ? 11 : 6; c.placeholder = recovery ? "XXXXX-XXXXX" : "••••••"; c.inputMode = recovery ? "text" : "numeric"; c.style.letterSpacing = recovery ? "3px" : "";
+  document.getElementById("mfaSub").textContent = recovery ? "Escribe uno de tus códigos de recuperación (cada uno sirve una sola vez)." : "Escribe el código de 6 dígitos de tu app Authenticator.";
+  this.textContent = recovery ? "Usar la app Authenticator" : "¿Sin teléfono? Usar un código de recuperación"; c.value = ""; c.focus();
+};
+document.getElementById("code").addEventListener("input", function () { if (!recovery && this.value.replace(/\D/g, "").length === 6) document.getElementById("fMfa").requestSubmit(); });
+document.getElementById("fMfa").addEventListener("submit", async function (e) {
+  e.preventDefault(); err("err2", ""); var b = document.getElementById("bMfa"); b.disabled = true;
+  try {
+    var r = await post("/portal/auth/mfa", {ticket: ticket, code: document.getElementById("code").value});
+    if (!r.ok) { err("err2", r.d.error || "Código incorrecto"); document.getElementById("code").value = ""; document.getElementById("code").focus(); if ((r.d.error || "").indexOf("caducó") >= 0) setTimeout(function () { location.reload(); }, 1800); return; }
+    done();
+  } catch (x) { err("err2", "Error de conexión con el portal"); }
+  finally { b.disabled = false; }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!--
+  Portal SOC · detección en tiempo real con las listas de IoC del motor de inteligencia.
+  Listas (las crea wazuh/actualizar_listas_ioc.sh): etc/lists/soc-ioc-ip, soc-ioc-domain, soc-ioc-hash
+  Declararlas en ossec.conf, dentro de <ruleset>:
+      <list>etc/lists/soc-ioc-ip</list>
+      <list>etc/lists/soc-ioc-domain</list>
+      <list>etc/lists/soc-ioc-hash</list>
+  Copiar este archivo a /var/ossec/etc/rules/ y probar con /var/ossec/bin/wazuh-logtest.
+  Los nombres de grupo dependen de la versión del ruleset: si una regla no salta, revisa el grupo
+  del evento en wazuh-logtest y ajusta <if_group>.
+-->
+<group name="ioc,portal_soc,">
+
+  <!-- IP de origen en la lista de IoC -->
+  <rule id="100710" level="10">
+    <if_group>authentication_failed</if_group>
+    <list field="srcip" lookup="address_match_key">etc/lists/soc-ioc-ip</list>
+    <description>IoC: intento de acceso fallido desde $(srcip), presente en fuentes de inteligencia</description>
+    <mitre><id>T1110</id></mitre>
+  </rule>
+
+  <rule id="100711" level="14">
+    <if_group>authentication_success</if_group>
+    <list field="srcip" lookup="address_match_key">etc/lists/soc-ioc-ip</list>
+    <description>IoC: inicio de sesión CORRECTO desde $(srcip), presente en fuentes de inteligencia</description>
+    <mitre><id>T1078</id></mitre>
+  </rule>
+
+  <rule id="100712" level="10">
+    <if_group>web</if_group>
+    <list field="srcip" lookup="address_match_key">etc/lists/soc-ioc-ip</list>
+    <description>IoC: petición web desde $(srcip), presente en fuentes de inteligencia</description>
+  </rule>
+
+  <rule id="100713" level="10">
+    <if_group>firewall</if_group>
+    <list field="srcip" lookup="address_match_key">etc/lists/soc-ioc-ip</list>
+    <description>IoC: tráfico de firewall desde $(srcip), presente en fuentes de inteligencia</description>
+  </rule>
+
+  <rule id="100714" level="12">
+    <if_group>firewall</if_group>
+    <list field="dstip" lookup="address_match_key">etc/lists/soc-ioc-ip</list>
+    <description>IoC: conexión saliente hacia $(dstip), presente en fuentes de inteligencia</description>
+    <mitre><id>T1071</id></mitre>
+  </rule>
+
+  <rule id="100715" level="12">
+    <if_group>ids</if_group>
+    <list field="srcip" lookup="address_match_key">etc/lists/soc-ioc-ip</list>
+    <description>IoC: alerta IDS con origen $(srcip), presente en fuentes de inteligencia</description>
+  </rule>
+
+  <!-- Windows / Sysmon: conexión de red (evento 3) y consulta DNS (evento 22) -->
+  <rule id="100716" level="12">
+    <if_group>sysmon_event3</if_group>
+    <list field="win.eventdata.destinationIp" lookup="address_match_key">etc/lists/soc-ioc-ip</list>
+    <description>IoC: $(win.eventdata.image) se conectó a $(win.eventdata.destinationIp), presente en fuentes de inteligencia</description>
+    <mitre><id>T1071</id></mitre>
+  </rule>
+
+  <rule id="100717" level="12">
+    <if_group>sysmon_event_22</if_group>
+    <list field="win.eventdata.queryName" lookup="match_key">etc/lists/soc-ioc-domain</list>
+    <description>IoC: consulta DNS a $(win.eventdata.queryName), presente en fuentes de inteligencia</description>
+    <mitre><id>T1071.004</id></mitre>
+  </rule>
+
+  <!-- Integridad de archivos (FIM): archivo creado o modificado con hash malicioso -->
+  <rule id="100718" level="13">
+    <if_sid>550, 554</if_sid>
+    <list field="md5" lookup="match_key">etc/lists/soc-ioc-hash</list>
+    <description>IoC: archivo $(file) con MD5 presente en fuentes de inteligencia (malware)</description>
+    <mitre><id>T1204</id></mitre>
+  </rule>
+
+  <rule id="100719" level="13">
+    <if_sid>550, 554</if_sid>
+    <list field="sha256" lookup="match_key">etc/lists/soc-ioc-hash</list>
+    <description>IoC: archivo $(file) con SHA256 presente en fuentes de inteligencia (malware)</description>
+    <mitre><id>T1204</id></mitre>
+  </rule>
+
+</group>

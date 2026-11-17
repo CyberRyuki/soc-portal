@@ -1,0 +1,262 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, [data-theme="xr"], [data-theme="xr"] *));
+@custom-variant xr (&:where([data-theme="xr"], [data-theme="xr"] *));
+
+/* ---------- Tokens de diseño (claro por defecto) ---------- */
+:root {
+  color-scheme: light;
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --card-glass: rgba(255, 255, 255, 0.78);
+  --ink: #151a2d;
+  --muted: #667085;
+  --line: #e4e7ef;
+  --grid: #eef0f5;
+  --brand: #2f5bea;
+  --brand-ink: #ffffff;
+  --brand-soft: #eef2ff;
+  --ok: #0ca30c;
+  --warn: #b26b00;
+  --bad: #d03b3b;
+  /* datos: categóricos, estado y rampa secuencial */
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s-neutral: #98a2b3;
+  --st-good: #0ca30c;
+  --st-warn: #fab219;
+  --st-serious: #ec835a;
+  --st-crit: #d03b3b;
+  --q1: #cde2fb;
+  --q2: #9ec5f4;
+  --q3: #6da7ec;
+  --q4: #3987e5;
+  --q5: #256abf;
+  --q6: #184f95;
+  --q7: #0d366b;
+  --glow-a: rgba(245, 158, 11, 0.14);
+  --glow-b: rgba(37, 99, 235, 0.1);
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 6px 20px rgba(16, 24, 40, 0.06);
+  --radius: 16px;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0d1120;
+  --card: #151a2d;
+  --card-glass: rgba(21, 26, 45, 0.78);
+  --ink: #eef0f7;
+  --muted: #98a2b3;
+  --line: #262c44;
+  --grid: #1f2539;
+  --brand: #7c9bff;
+  --brand-ink: #0b1020;
+  --brand-soft: #1d2550;
+  --ok: #3ccb3c;
+  --warn: #fab219;
+  --bad: #ef6b6b;
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s-neutral: #5d6680;
+  --q1: #1a2747;
+  --q2: #104281;
+  --q3: #184f95;
+  --q4: #256abf;
+  --q5: #3987e5;
+  --q6: #6da7ec;
+  --q7: #b7d3f6;
+  --glow-a: rgba(245, 158, 11, 0.3);
+  --glow-b: rgba(34, 211, 238, 0.18);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+:root[data-theme='xr'] {
+  color-scheme: dark;
+  --bg: #0b1220;
+  --card: #111e30;
+  --card-glass: rgba(17, 30, 48, 0.8);
+  --ink: #e3f2ff;
+  --muted: #8aa4bf;
+  --line: #1f3a57;
+  --grid: #13243a;
+  --brand: #22d3ee;
+  --brand-ink: #04212b;
+  --brand-soft: rgba(34, 211, 238, 0.12);
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --bad: #fb7185;
+  --s1: #22d3ee;
+  --s2: #f59e0b;
+  --s-neutral: #4b6480;
+  --st-good: #34d399;
+  --st-warn: #fbbf24;
+  --st-serious: #fb923c;
+  --st-crit: #f43f5e;
+  --q1: #0f2a44;
+  --q2: #0e4a6e;
+  --q3: #0b6b8f;
+  --q4: #0891b2;
+  --q5: #06b6d4;
+  --q6: #22d3ee;
+  --q7: #a5f3fc;
+  --glow-a: rgba(245, 158, 11, 0.22);
+  --glow-b: rgba(34, 211, 238, 0.22);
+  --shadow: 0 0 0 1px rgba(34, 211, 238, 0.06), 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- Tema de Tailwind a partir de los tokens ---------- */
+@theme inline {
+  --font-sans: 'Inter Variable', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, Consolas, monospace;
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-grid: var(--grid);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-s1: var(--s1);
+  --color-s2: var(--s2);
+  --color-s-neutral: var(--s-neutral);
+  --color-st-good: var(--st-good);
+  --color-st-warn: var(--st-warn);
+  --color-st-serious: var(--st-serious);
+  --color-st-crit: var(--st-crit);
+  --radius-card: var(--radius);
+  --shadow-card: var(--shadow);
+}
+
+@layer base {
+  * {
+    @apply border-line;
+  }
+  html {
+    background: var(--bg);
+  }
+  body {
+    @apply m-0 font-sans text-[14.5px] leading-normal text-ink antialiased;
+    background: transparent;
+  }
+  /* luces de color al fondo (estilo panel moderno) */
+  body::before,
+  body::after {
+    content: '';
+    position: fixed;
+    z-index: -1;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(90px);
+  }
+  body::before {
+    width: 520px;
+    height: 520px;
+    right: -120px;
+    top: -160px;
+    background: radial-gradient(circle, var(--glow-a), transparent 70%);
+  }
+  body::after {
+    width: 620px;
+    height: 620px;
+    left: 120px;
+    bottom: -320px;
+    background: radial-gradient(circle, var(--glow-b), transparent 70%);
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  ::selection {
+    background: var(--brand);
+    color: var(--brand-ink);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-card border border-line shadow-card;
+    background: var(--card-glass);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .glass {
+    background: var(--card-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .mono {
+    @apply font-mono text-[12.5px];
+  }
+  .scroll-thin {
+    scrollbar-width: thin;
+  }
+  /* markdown */
+  .md {
+    @apply leading-relaxed;
+  }
+  .md h1 {
+    @apply mb-2 mt-4 text-xl font-bold;
+  }
+  .md h2 {
+    @apply mb-2 mt-5 border-b border-line pb-1 text-base font-bold;
+  }
+  .md h3 {
+    @apply mb-1 mt-4 text-[14.5px] font-bold;
+  }
+  .md p {
+    @apply my-2;
+  }
+  .md ul,
+  .md ol {
+    @apply my-2 pl-6;
+  }
+  .md ul {
+    @apply list-disc;
+  }
+  .md ol {
+    @apply list-decimal;
+  }
+  .md li {
+    @apply my-0.5;
+  }
+  .md code {
+    @apply rounded bg-grid px-1 py-0.5 font-mono text-[12.5px];
+  }
+  .md pre {
+    @apply my-3 overflow-auto rounded-xl bg-grid p-3 text-[12.5px];
+  }
+  .md pre code {
+    @apply bg-transparent p-0;
+  }
+  .md table {
+    @apply my-3 w-full border-collapse text-[13px];
+  }
+  .md th,
+  .md td {
+    @apply border border-line px-2 py-1 text-left align-top;
+  }
+  .md th {
+    @apply bg-grid font-semibold;
+  }
+  .md blockquote {
+    @apply my-3 border-l-4 border-brand bg-brand-soft/60 px-3 py-2 text-[13.5px];
+  }
+  .md a {
+    @apply text-brand underline;
+  }
+  .md hr {
+    @apply my-4 border-line;
+  }
+}

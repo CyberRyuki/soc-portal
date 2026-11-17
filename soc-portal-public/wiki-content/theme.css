@@ -1,0 +1,26 @@
+/* SOC ACME — estilo para Wiki.js (Admin → Theme → Code Injection → CSS Override) */
+:root { --soc-brand: #2f5bea; --soc-brand2: #7a5af8; }
+.v-application .contents { font-size: 15.5px; line-height: 1.65; }
+.v-application .contents h1 { font-weight: 700; letter-spacing: -.01em; }
+.v-application .contents h2 { font-weight: 650; padding-bottom: 6px; border-bottom: 2px solid rgba(47,91,234,.15); }
+/* Tarjetas: links-list y grid-list */
+.v-application .contents ul.links-list > li,
+.v-application .contents ul.grid-list > li {
+  border-radius: 14px !important; border-left: 4px solid var(--soc-brand) !important;
+  box-shadow: 0 1px 2px rgba(16,24,40,.06), 0 6px 18px rgba(16,24,40,.06) !important;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.v-application .contents ul.links-list > li:hover,
+.v-application .contents ul.grid-list > li:hover {
+  transform: translateY(-2px); box-shadow: 0 10px 28px rgba(16,24,40,.12) !important;
+}
+.v-application .contents ul.links-list > li a,
+.v-application .contents ul.grid-list > li a { font-weight: 600; }
+/* Avisos */
+.v-application .contents blockquote { border-radius: 12px; }
+/* Tablas */
+.v-application .contents table { border-radius: 12px; overflow: hidden; border-collapse: separate; border-spacing: 0; }
+.v-application .contents table th { background: rgba(47,91,234,.08); font-weight: 650; }
+.v-application .contents table tr:hover td { background: rgba(47,91,234,.04); }
+/* Barra superior con el color del SOC */
+.v-application header.nav-header { background: linear-gradient(90deg, var(--soc-brand), var(--soc-brand2)) !important; }
